@@ -615,7 +615,8 @@ const Tailor = ({
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col gap-4 p-4 bg-background border border-primary/10 rounded-md ">
+            className="flex flex-col gap-4 p-4 bg-background border border-primary/10 rounded-md "
+          >
             <div className="flex items-start gap-3">
               <div className="flex items-center justify-center w-10 h-10 rounded-full  text-primary shrink-0">
                 <RiSparklingFill className="w-5 h-5" />

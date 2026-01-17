@@ -1,7 +1,13 @@
 "use client";
 
 import { getJobs } from "@/actions/jobs/getJobs";
-import React, { useEffect, useState, useRef, useMemo, useCallback } from "react";
+import React, {
+  useEffect,
+  useState,
+  useRef,
+  useMemo,
+  useCallback,
+} from "react";
 import JobCard from "./_components/jobCard";
 import { JobSearchResponse } from "@/types/job";
 import JobDetails from "./_components/jobDetails";
