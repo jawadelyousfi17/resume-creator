@@ -196,7 +196,7 @@ const JobsContent = () => {
             Array.from({ length: 5 }).map((_, index) => (
               <div
                 key={index}
-                className="flex gap-4 p-4 border rounded-2xl animate-in fade-in"
+                className="flex gap-4 p-4  rounded-2xl animate-in fade-in"
               >
                 <Skeleton className="w-12 h-12 rounded-lg shrink-0" />
                 <div className="flex flex-col gap-2 flex-1">
@@ -216,6 +216,7 @@ const JobsContent = () => {
           ) : (
             jobs.data.map((job, index) => (
               <JobCard
+                jobId={job.job_id}
                 active={activeJob?.job_id === job.job_id}
                 onClick={() => setActiveJob(job)}
                 key={job.job_id || index}
@@ -229,7 +230,7 @@ const JobsContent = () => {
           )}
 
           {loadingMore && (
-            <div className="flex gap-4 p-4 border rounded-2xl animate-in fade-in">
+            <div className="flex gap-4 p-4  rounded-2xl animate-in fade-in">
               <Skeleton className="w-12 h-12 rounded-lg shrink-0" />
               <div className="flex flex-col gap-2 flex-1">
                 <Skeleton className="h-4 w-32" />
@@ -245,7 +246,7 @@ const JobsContent = () => {
             </div>
           )}
         </div>
-        <div className="flex-2 flex flex-col border rounded-2xl">
+        <div className="flex-2 flex flex-col border border-border/30 rounded-2xl">
           {loading ? (
             <div className="p-6 space-y-4 animate-in fade-in">
               <div className="flex gap-4">

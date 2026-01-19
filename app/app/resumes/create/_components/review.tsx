@@ -18,6 +18,10 @@ import {
   useMemo,
   useState,
 } from "react";
+import {
+  isAiCreditsExhaustedError,
+  useAiCreditsGate,
+} from "@/components/general/aiCreditsDialog";
 
 const colors = {
   10: "#ef4444", // Danger / Low (red-500)
@@ -60,6 +64,8 @@ const Review = ({
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
 
+  const { ensureCanUseAi, openDialog, dialog } = useAiCreditsGate();
+
   const [isReviewing, setIsReviewing] = useState(false);
   const [review, setReview] = useState<ResumeReviewResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -68,6 +74,12 @@ const Review = ({
 
   const handleRunReview = useCallback(async () => {
     setIsReviewing(true);
+    const allowed = await ensureCanUseAi();
+    if (!allowed) {
+      setIsReviewing(false);
+      return;
+    }
+
     setError(null);
     try {
       const result = await reviewResume(resumeJsonString);
@@ -79,14 +91,19 @@ const Review = ({
     } catch (err) {
       console.error(err);
       setReview(null);
+      if (isAiCreditsExhaustedError(err)) {
+        openDialog();
+        return;
+      }
       setError("Failed to generate resume review. Please try again.");
     } finally {
       setIsReviewing(false);
     }
-  }, [resumeJsonString, id]);
+  }, [ensureCanUseAi, id, openDialog, resumeJsonString]);
 
   return (
     <div className="bg-background p-4 space-y-5">
+      {dialog}
       <div className="flex flex-col gap-0.5">
         <span className="font-semibold text-lg font-serif">
           Review Your Resume

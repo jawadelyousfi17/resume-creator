@@ -14,6 +14,10 @@ import MonthYearPicker from "@/components/general/dateTimePicker";
 import HtmlEditor from "@/components/general/htmlEditor";
 import { RiSparklingFill } from "react-icons/ri";
 import { enhanceCustomSection } from "@/actions/openai/enhaceJobDescription";
+import {
+  isAiCreditsExhaustedError,
+  useAiCreditsGate,
+} from "@/components/general/aiCreditsDialog";
 
 const CustomCard = ({
   data,
@@ -27,6 +31,8 @@ const CustomCard = ({
   sectionTitle: string;
 }) => {
   const [collapsed, setCollapsed] = useState(true);
+
+  const { ensureCanUseAi, openDialog, dialog } = useAiCreditsGate();
 
   const confirm = useConfirm();
   const {
@@ -78,40 +84,55 @@ const CustomCard = ({
 
   async function handleEnhacing() {
     setEnhacing(true);
-    const newDescription = await enhanceCustomSection(
-      data.description,
-      JSON.stringify(data),
-      sectionTitle
-    );
-    setEnhacing(false);
-    const confirmed = await confirm({
-      description: newDescription,
-    });
-    if (confirmed) {
-      setData((prev) => ({
-        ...prev,
-        additional: prev.additional.map((collection) => {
-          if (collection.id === collectionId) {
-            return {
-              ...collection,
-              sections: collection.sections.map((item) => {
-                if (item.id === data.id)
-                  return {
-                    ...item,
-                    description: newDescription,
-                  };
-                return item;
-              }),
-            };
-          }
-          return collection;
-        }),
-      }));
+    const allowed = await ensureCanUseAi();
+    if (!allowed) {
+      setEnhacing(false);
+      return;
+    }
+
+    try {
+      const newDescription = await enhanceCustomSection(
+        data.description,
+        JSON.stringify(data),
+        sectionTitle
+      );
+      const confirmed = await confirm({
+        description: newDescription,
+      });
+      if (confirmed) {
+        setData((prev) => ({
+          ...prev,
+          additional: prev.additional.map((collection) => {
+            if (collection.id === collectionId) {
+              return {
+                ...collection,
+                sections: collection.sections.map((item) => {
+                  if (item.id === data.id)
+                    return {
+                      ...item,
+                      description: newDescription,
+                    };
+                  return item;
+                }),
+              };
+            }
+            return collection;
+          }),
+        }));
+      }
+    } catch (error) {
+      console.error(error);
+      if (isAiCreditsExhaustedError(error)) {
+        openDialog();
+      }
+    } finally {
+      setEnhacing(false);
     }
   }
 
   return (
     <div ref={setNodeRef} style={cardStyle} key={data.id}>
+      {dialog}
       <motion.div
         drag="y"
         dragConstraints={{ top: 0, bottom: 0 }}

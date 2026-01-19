@@ -6,12 +6,16 @@ import CreateResume from "./_components/CreateResume";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { getAllResume } from "@/actions/resume/getAllResume";
+// import ResumesStepsDashboard from "./_components/ResumesStepsDashboard";
+import CreateResumeDialogTrigger from "./_components/CreateResumeDialogTrigger";
 
 const page = async () => {
   const resumes = await getAllResume();
+  const resumeList = resumes ?? [];
 
   return (
     <div className="p-4 space-y-4">
+      {/* <ResumesStepsDashboard resumes={resumeList} /> */}
       <div className="space-y-2">
         <div className="flex justify-between items-center "></div>
         {resumes && resumes.length > 0 && (
@@ -50,7 +54,7 @@ const page = async () => {
                         className={cn(
                           "fill-none",
 
-                          "stroke-primary/20"
+                          "stroke-primary/20",
                         )}
                         strokeWidth="1.5"
                         strokeLinecap="round"
@@ -66,11 +70,11 @@ const page = async () => {
                   </span>
                 </div>
               </div>
-              <Link href="/app/resumes/create">
+              <CreateResumeDialogTrigger>
                 <Button className="shadow-none rounded-full h-full">
                   <Plus /> Create resume
                 </Button>
-              </Link>
+              </CreateResumeDialogTrigger>
             </div>
           </div>
         )}
@@ -102,7 +106,7 @@ const page = async () => {
             </p>
           </div>
 
-          <Link href="/app/resumes/create">
+          <CreateResumeDialogTrigger>
             <Button
               size="lg"
               className="rounded-full px-8 gap-2 h-12 text-md shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all hover:scale-105 active:scale-95"
@@ -110,7 +114,7 @@ const page = async () => {
               <Plus className="w-5 h-5" />
               Create resume
             </Button>
-          </Link>
+          </CreateResumeDialogTrigger>
         </div>
       )}
     </div>

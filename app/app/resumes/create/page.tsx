@@ -2,6 +2,7 @@ import { createResume } from "@/actions/resume/createResume";
 import CreateResume from "./createResume";
 import { redirect } from "next/navigation";
 import { getResumeById } from "@/actions/resume/getResumeById";
+import QuotaExceeded from "./_components/QuotaExceeded";
 
 const page = async ({
   searchParams,
@@ -12,7 +13,10 @@ const page = async ({
 
   if (!id) {
     const { data, error } = await createResume();
-    if (error || !data?.id) {
+    if (error) {
+      return <QuotaExceeded message={error} />;
+    }
+    if (!data?.id) {
       return <>ERROR</>;
     }
     redirect(`/app/resumes/create?id=${data.id}&isempty=true`);

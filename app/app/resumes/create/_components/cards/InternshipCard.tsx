@@ -19,6 +19,8 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useConfirm } from "@/components/general/confirmContext";
 import HtmlEditor from "@/components/general/htmlEditor";
+import { useAiCreditsGate } from "@/components/general/aiCreditsDialog";
+import toast from "react-hot-toast";
 
 const reactions = [
   {
@@ -51,6 +53,8 @@ const InternshipCard = ({
   setData: Dispatch<SetStateAction<T_Resume>>;
 }) => {
   const [collapsed, setCollapsed] = useState(true);
+
+  const { ensureCanUseAi, dialog } = useAiCreditsGate();
 
   const confirm = useConfirm();
   const {
@@ -89,8 +93,15 @@ const InternshipCard = ({
     }
   }
 
+  async function handleEnhanceClick() {
+    const allowed = await ensureCanUseAi();
+    if (!allowed) return;
+    toast("AI internship enhancement not wired yet");
+  }
+
   return (
     <div ref={setNodeRef} style={cardStyle} key={data.id}>
+      {dialog}
       <motion.div
         drag="y"
         dragConstraints={{ top: 0, bottom: 0 }}
@@ -282,13 +293,13 @@ const InternshipCard = ({
                         <Button
                           className="bg-background  rounded-full text-indigo-500 hover:text-indigo-700 hover:bg-background/80"
                           size="sm"
+                          onClick={handleEnhanceClick}
                         >
                           <Sparkles />
                           Enhace with AI
                         </Button>
                       </div>
                       <HtmlEditor
-                      
                         value={data.description}
                         onChange={(e) =>
                           setData((prev) => ({

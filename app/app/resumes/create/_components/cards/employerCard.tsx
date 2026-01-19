@@ -23,6 +23,10 @@ import { enhanceJobDescription } from "@/actions/openai/enhaceJobDescription";
 import { Spinner } from "@/components/ui/spinner";
 import HtmlEditor from "@/components/general/htmlEditor";
 import { RiSparklingFill } from "react-icons/ri";
+import {
+  isAiCreditsExhaustedError,
+  useAiCreditsGate,
+} from "@/components/general/aiCreditsDialog";
 
 const EmployerCard = ({
   data,
@@ -33,6 +37,8 @@ const EmployerCard = ({
 }) => {
   const [collapsed, setCollapsed] = useState(true);
   const [loading, setLoading] = useState(false);
+
+  const { ensureCanUseAi, openDialog, dialog } = useAiCreditsGate();
 
   const confirm = useConfirm();
 
@@ -77,6 +83,11 @@ const EmployerCard = ({
   async function handleEnhaceJobDescription() {
     try {
       setLoading(true);
+      const allowed = await ensureCanUseAi();
+      if (!allowed) {
+        setLoading(false);
+        return;
+      }
       const description = await enhanceJobDescription(
         data.description,
         JSON.stringify(data)
@@ -102,6 +113,9 @@ const EmployerCard = ({
         }));
     } catch (error) {
       console.log(error);
+      if (isAiCreditsExhaustedError(error)) {
+        openDialog();
+      }
     } finally {
       setLoading(false);
     }
@@ -109,6 +123,7 @@ const EmployerCard = ({
 
   return (
     <div ref={setNodeRef} style={cardStyle} key={data.id}>
+      {dialog}
       <motion.div
         drag="y"
         dragConstraints={{ top: 0, bottom: 0 }}

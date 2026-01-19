@@ -1,6 +1,7 @@
 "use server";
 
 import OpenAI from "openai";
+import { consumeAiCredit } from "../subscription/consumeAiCredit";
 
 const openai = new OpenAI();
 
@@ -17,6 +18,11 @@ export async function getAIResponse(
     reasoningEffort?: "none" | "low" | "medium" | "high";
   }
 ): Promise<string> {
+  const creditResult = await consumeAiCredit();
+  if (!creditResult.success) {
+    throw new Error(creditResult.error || "No AI credits available");
+  }
+
   try {
     const response = await openai.responses.create({
       model: options?.model || "gpt-5.2",
@@ -39,6 +45,11 @@ export async function getAIResponse(
  * @returns The AI response as a string
  */
 export async function getAIResponseGPT4(instruction: string): Promise<string> {
+  const creditResult = await consumeAiCredit();
+  if (!creditResult.success) {
+    throw new Error(creditResult.error || "No AI credits available");
+  }
+
   try {
     const response = await openai.chat.completions.create({
       model: "gpt-4o",

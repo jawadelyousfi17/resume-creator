@@ -20,6 +20,10 @@ import {
 import HtmlEditor from "@/components/general/htmlEditor";
 import { RiSparklingFill } from "react-icons/ri";
 import { Spinner } from "@/components/ui/spinner";
+import {
+  isAiCreditsExhaustedError,
+  useAiCreditsGate,
+} from "@/components/general/aiCreditsDialog";
 export const reactions = [
   {
     value: 80,
@@ -53,8 +57,15 @@ const ProfessionalSummary = ({
   const [isEnhancing, setIsEnhancing] = useState(false);
   const confirm = useConfirm();
 
+  const { ensureCanUseAi, openDialog, dialog } = useAiCreditsGate();
+
   async function handleEnhaceSummary() {
     setIsEnhancing(true);
+    const allowed = await ensureCanUseAi();
+    if (!allowed) {
+      setIsEnhancing(false);
+      return;
+    }
     try {
       const res = await enhaceProfessionalSummary(
         data.professionalSummary.description
@@ -76,6 +87,9 @@ const ProfessionalSummary = ({
       }
     } catch (error) {
       console.error("Failed to enhance summary:", error);
+      if (isAiCreditsExhaustedError(error)) {
+        openDialog();
+      }
     } finally {
       setIsEnhancing(false);
     }
@@ -109,6 +123,7 @@ const ProfessionalSummary = ({
   );
   return (
     <div className="bg-background p-4 space-y-5">
+      {dialog}
       <div className="flex flex-col gap-0.5">
         <span className="font-semibold font-serif">Professional Summary</span>
         <span className="text-xs font-light text-foreground/50">
@@ -222,7 +237,7 @@ const ProfessionalSummary = ({
                   className="bg-background  rounded-full text-indigo-500 hover:text-indigo-700 hover:bg-background/80 disabled:opacity-50"
                   size="sm"
                 >
-                  {isEnhancing ? <Spinner/> : <RiSparklingFill />}
+                  {isEnhancing ? <Spinner /> : <RiSparklingFill />}
                   {isEnhancing ? "Enhancing..." : "Enhace with AI"}
                 </Button>
               }

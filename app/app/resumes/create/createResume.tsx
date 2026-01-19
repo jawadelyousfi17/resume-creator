@@ -24,7 +24,7 @@ import { Resume } from "@/lib/generated/prisma";
 import { updateResumeById } from "@/actions/resume/updateResumeById";
 import toast from "react-hot-toast";
 import NewResumeCard from "./_components/cards/newResume";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 import ResumeTemplate1 from "@/components/resume/templates/t1";
 import ResumeTemplate2 from "@/components/resume/templates/t2";
@@ -35,6 +35,11 @@ import ResumeTemplate6 from "@/components/resume/templates/t6";
 import { templates } from "@/_templates";
 import { RiSparklingFill } from "react-icons/ri";
 import Tailor from "./_components/tailor";
+import ResumeStartDialog, {
+  ResumeStartMode,
+} from "./_components/ResumeStartDialog";
+import { parseResumeFromFile } from "@/actions/resume/parseResumeFromFile";
+import { normalizeResume } from "./_utils/normalizeResume";
 
 const defaultSections = [
   {
@@ -87,6 +92,11 @@ const CreateResume = ({
     resume?.content as unknown as T_Resume
   );
   const [mounted, setMounted] = useState(false);
+  const [startOpen, setStartOpen] = useState(false);
+  const [startMode, setStartMode] = useState<ResumeStartMode | null>(null);
+  const [uploadingResume, setUploadingResume] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     setMounted(true);
@@ -96,10 +106,7 @@ const CreateResume = ({
 
   const [next, setNext] = useState("");
 
-  // Initialize sections with activation based on data
-  const initializeSections = () => {
-    const resumeData = resume?.content as unknown as T_Resume;
-
+  const getSectionsForResume = (resumeData: T_Resume) => {
     return defaultSections.map((section) => {
       // Keep default active sections always active
       if (section.active) return section;
@@ -133,7 +140,9 @@ const CreateResume = ({
     });
   };
 
-  const [sections, setSections] = useState(initializeSections);
+  const [sections, setSections] = useState(() =>
+    getSectionsForResume(resume?.content as unknown as T_Resume)
+  );
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const activeSections = [...sections.filter((s) => s.active)];
@@ -232,15 +241,56 @@ const CreateResume = ({
   if (!mounted) return null;
 
   return (
-    <main className="flex flex-col bg-muted h-svh">
-      {/* <nav className="flex justify-center items-center">EDIT - CUSTOMIZE</nav> */}
-      <div
-        className={`flex ${
-          isReview && "flex-row-reverse"
-        } h-[calc(100svh-70px)]`}
-      >
-        <div className="flex flex-col gap-1 flex-1 overflow-y-scroll">
-          {/* <div className="overflow-hidden relative flex justify-between items-center bg-background  p-4">
+    <>
+      <ResumeStartDialog
+        open={startOpen}
+        mode={startMode}
+        uploading={uploadingResume}
+        uploadError={uploadError}
+        onSelectMode={(mode) => {
+          if (mode === "analyze") {
+            router.push("/app/analyze");
+            return;
+          }
+
+          if (mode === "scratch") {
+            setStartMode(mode);
+            setStartOpen(false);
+            return;
+          }
+
+          setStartMode(mode);
+        }}
+        onContinueUpload={async (file) => {
+          setUploadError(null);
+          setUploadingResume(true);
+
+          const result = await parseResumeFromFile(file);
+
+          if (result.error || !result.data) {
+            setUploadError(result.error || "Failed to parse resume");
+            setUploadingResume(false);
+            return;
+          }
+
+          const normalized = normalizeResume(result.data);
+          setData(normalized);
+          setSections(getSectionsForResume(normalized));
+          setStep(1);
+          setStartOpen(false);
+          setUploadingResume(false);
+          toast.success("Resume imported");
+        }}
+      />
+      <main className="flex flex-col bg-muted h-svh">
+        {/* <nav className="flex justify-center items-center">EDIT - CUSTOMIZE</nav> */}
+        <div
+          className={`flex ${
+            isReview && "flex-row-reverse"
+          } h-[calc(100svh-70px)]`}
+        >
+          <div className="flex flex-col gap-1 flex-1 overflow-y-scroll">
+            {/* <div className="overflow-hidden relative flex justify-between items-center bg-background  p-4">
             <div className="absolute top-0 left-0 w-[85%] h-full bg-green-500 opacity-20 z-5"></div>
             <div className="flex gap-2 items-center z-10">
               <span className="bg-green-600 flex justify-center items-center px-2 py-1 rounded-sm text-white font-semibold text-sm">
@@ -250,138 +300,139 @@ const CreateResume = ({
             </div>
           </div> */}
 
-          {activeSections.map(
-            (item, index) =>
-              step === index + 1 && (
-                <item.section key={item.id} setData={setData} data={data} />
-              )
-          )}
+            {activeSections.map(
+              (item, index) =>
+                step === index + 1 && (
+                  <item.section key={item.id} setData={setData} data={data} />
+                )
+            )}
 
-          {isEndScreen && (
-            <div className="bg-background p-4 space-y-5">
-              <div className="flex flex-col">
-                <span className="text-lg font-serif font-semibold">
-                  Add additional Sections
-                </span>
-                <span className="text-xs text-foreground/50 font-light">
-                  Here is description that you can add or skip without it
-                </span>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                {sections
-                  .filter((s) => !s.active)
-                  .map((section) => (
-                    <div
-                      key={section.id}
-                      onClick={() => handleToggleSection(section.id)}
-                      className="justify-start flex flex-row items-center gap-2 cursor-pointer hover:text-primary p-3 border border-border/5 bg-muted rounded-lg group transition-all"
-                    >
-                      <svg
-                        className="h-7 w-7"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
+            {isEndScreen && (
+              <div className="bg-background p-4 space-y-5">
+                <div className="flex flex-col">
+                  <span className="text-lg font-serif font-semibold">
+                    Add additional Sections
+                  </span>
+                  <span className="text-xs text-foreground/50 font-light">
+                    Here is description that you can add or skip without it
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  {sections
+                    .filter((s) => !s.active)
+                    .map((section) => (
+                      <div
+                        key={section.id}
+                        onClick={() => handleToggleSection(section.id)}
+                        className="justify-start flex flex-row items-center gap-2 cursor-pointer hover:text-primary p-3 border border-border/5 bg-muted rounded-lg group transition-all"
                       >
-                        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                        <g
-                          id="SVGRepo_tracerCarrier"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        ></g>
-                        <g id="SVGRepo_iconCarrier">
-                          {" "}
-                          <circle
-                            opacity="0.5"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="#1C274C"
-                            stroke-width="1.5"
-                            className="group-hover:stroke-primary"
-                          ></circle>{" "}
-                          <path
-                            d="M15 12L12 12M12 12L9 12M12 12L12 9M12 12L12 15"
-                            stroke="#1C274C"
-                            className="group-hover:stroke-primary"
-                            stroke-width="1.5"
+                        <svg
+                          className="h-7 w-7"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                          <g
+                            id="SVGRepo_tracerCarrier"
                             stroke-linecap="round"
-                          ></path>{" "}
-                        </g>
-                      </svg>
-                      <span className="text-sm font-semibold">
-                        {section.sectionTitle}
-                      </span>
-                    </div>
-                  ))}
+                            stroke-linejoin="round"
+                          ></g>
+                          <g id="SVGRepo_iconCarrier">
+                            {" "}
+                            <circle
+                              opacity="0.5"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="#1C274C"
+                              stroke-width="1.5"
+                              className="group-hover:stroke-primary"
+                            ></circle>{" "}
+                            <path
+                              d="M15 12L12 12M12 12L9 12M12 12L12 9M12 12L12 15"
+                              stroke="#1C274C"
+                              className="group-hover:stroke-primary"
+                              stroke-width="1.5"
+                              stroke-linecap="round"
+                            ></path>{" "}
+                          </g>
+                        </svg>
+                        <span className="text-sm font-semibold">
+                          {section.sectionTitle}
+                        </span>
+                      </div>
+                    ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {isReview && <Review data={data} setData={setData} />}
-          {isTailoring && (
-            <div>
-              <div className="flex-1 px-4 flex flex-col overflow-y-scroll gap-3 ">
-                <Tailor
-                  resume={resume}
-                  sections={activeSections}
-                  data={data}
-                  setData={setData}
-                />
-              </div>
-            </div>
-          )}
-
-          {!isTailoring && (
-            <div className="bg-background p-4 flex justify-between items-center sticky bottom-0 border-t-4 border-muted">
-              {" "}
+            {isReview && <Review data={data} setData={setData} />}
+            {isTailoring && (
               <div>
-                {step > 1 && (
-                  <Button
-                    onClick={() => setStep((prev) => prev - 1)}
-                    variant="outline"
-                    className="bg-muted border-0 shadow-none"
-                  >
-                    Back
-                  </Button>
-                )}
+                <div className="flex-1 px-4 flex flex-col overflow-y-scroll gap-3 ">
+                  <Tailor
+                    resume={resume}
+                    sections={activeSections}
+                    data={data}
+                    setData={setData}
+                  />
+                </div>
               </div>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <RoundedIndex
-                  totalSteps={activeSections.length + 2}
-                  index={step - 1}
-                />
-                {/* <div cl */}
-              </div>
-              <Button
-                onClick={() => setStep((prev) => prev + 1)}
-                className="bg-primary border-0 shadow-none"
-              >
-                {!isReview && (
-                  <>
-                    Next <ArrowRight />
-                  </>
-                )}
+            )}
 
-                {isReview && <>Done</>}
-              </Button>
+            {!isTailoring && (
+              <div className="bg-background p-4 flex justify-between items-center sticky bottom-0 border-t-4 border-muted">
+                {" "}
+                <div>
+                  {step > 1 && (
+                    <Button
+                      onClick={() => setStep((prev) => prev - 1)}
+                      variant="outline"
+                      className="bg-muted border-0 shadow-none"
+                    >
+                      Back
+                    </Button>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <RoundedIndex
+                    totalSteps={activeSections.length + 2}
+                    index={step - 1}
+                  />
+                  {/* <div cl */}
+                </div>
+                <Button
+                  onClick={() => setStep((prev) => prev + 1)}
+                  className="bg-primary border-0 shadow-none"
+                >
+                  {!isReview && (
+                    <>
+                      Next <ArrowRight />
+                    </>
+                  )}
+
+                  {isReview && <>Done</>}
+                </Button>
+              </div>
+            )}
+          </div>
+          {!isReview && (
+            <div className="flex-1 h-svh overflow-hidden">
+              <ResumePreview Template={template.template} data={data} />
+            </div>
+          )}
+
+          {isReview && (
+            <div className="flex-1 px-4 flex flex-col overflow-y-scroll gap-3 ">
+              {activeSections.map((item, index) => (
+                <item.section key={item.id} setData={setData} data={data} />
+              ))}
             </div>
           )}
         </div>
-        {!isReview && (
-          <div className="flex-1 h-svh overflow-hidden">
-            <ResumePreview Template={template.template} data={data} />
-          </div>
-        )}
-
-        {isReview && (
-          <div className="flex-1 px-4 flex flex-col overflow-y-scroll gap-3 ">
-            {activeSections.map((item, index) => (
-              <item.section key={item.id} setData={setData} data={data} />
-            ))}
-          </div>
-        )}
-      </div>
-    </main>
+      </main>
+    </>
   );
 };
 

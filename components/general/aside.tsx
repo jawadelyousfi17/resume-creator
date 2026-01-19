@@ -312,60 +312,7 @@ const Aside = ({ active = "jobs" }: AsideProps) => {
             )}
           </div>
         </Link>
-        <Link href="/app/job-tracker">
-          <div
-            id="jobs-tracker"
-            className={cn(
-              navItemBase,
-              active === "jobs-tracker" ? "bg-muted" : ""
-            )}
-          >
-            <svg
-              fill="#000000"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-              className={cn(
-                "h-7 w-7 scale-110",
-                active === "jobs-tracker"
-                  ? "fill-primary"
-                  : "fill-muted-foreground"
-              )}
-            >
-              <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
-              <g
-                id="SVGRepo_tracerCarrier"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              ></g>
-              <g id="SVGRepo_iconCarrier">
-                {" "}
-                <path
-                  fillRule="evenodd"
-                  clipRule="evenodd"
-                  d="M2.25 12C2.25 6.61522 6.61522 2.25 12 2.25C17.3848 2.25 21.75 6.61522 21.75 12C21.75 17.3848 17.3848 21.75 12 21.75C6.61522 21.75 2.25 17.3848 2.25 12ZM14.5981 10.5C14.1054 9.64672 11.8249 8.30987 10.3308 7.49936C9.74252 7.1802 9.44837 7.02063 9.20597 7.16057C8.96357 7.30052 8.95469 7.63506 8.93694 8.30412C8.89184 10.0033 8.9093 12.6467 9.40194 13.5C9.89458 14.3533 12.1752 15.6901 13.6692 16.5006C14.2575 16.8198 14.5517 16.9794 14.7941 16.8394C15.0365 16.6995 15.0453 16.3649 15.0631 15.6959C15.1082 13.9967 15.0907 11.3533 14.5981 10.5Z"
-                  className={cn(
-                    active === "jobs-tracker"
-                      ? "fill-primary"
-                      : "fill-muted-foreground"
-                  )}
-                ></path>{" "}
-              </g>
-            </svg>
-            {!collapsed && (
-              <span
-                className={cn(
-                  "text-sm",
-                  active === "jobs-tracker"
-                    ? "text-primary"
-                    : "text-muted-foreground"
-                )}
-              >
-                Jobs tracker
-              </span>
-            )}
-          </div>
-        </Link>
-
+      
         <div className="mt-auto">
           <div className="flex gap-4 p-2 px-4 rounded-2xl items-center cursor-pointer hover:bg-muted">
             <img src="/icons/chrome.png" className="h-6 w-6" alt="" />

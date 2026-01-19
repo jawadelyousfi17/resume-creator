@@ -1,3 +1,6 @@
+"use client";
+
+import { saveJob } from "@/actions/jobs/saveJob";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Bookmark, Clock, Heart, Locate, MapPin } from "lucide-react";
@@ -10,6 +13,7 @@ const JobCard = ({
   jobLocation,
   postedAt,
   onClick,
+  jobId,
 }: {
   active: boolean;
   onClick: () => void;
@@ -18,6 +22,7 @@ const JobCard = ({
   employerName: string;
   jobLocation: string;
   postedAt: string;
+  jobId: string;
 }) => {
   return (
     <div

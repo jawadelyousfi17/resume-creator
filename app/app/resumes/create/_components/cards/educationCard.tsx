@@ -22,6 +22,10 @@ import { reactions } from "../professionalSummary";
 import { enhaceEducationDescription } from "@/actions/openai/enhaceJobDescription";
 import HtmlEditor from "@/components/general/htmlEditor";
 import { RiSparklingFill } from "react-icons/ri";
+import {
+  isAiCreditsExhaustedError,
+  useAiCreditsGate,
+} from "@/components/general/aiCreditsDialog";
 
 const EducationCard = ({
   data,
@@ -32,6 +36,8 @@ const EducationCard = ({
 }) => {
   const [collapsed, setCollapsed] = useState(true);
   const [isEnhancing, setIsEnhancing] = useState(false);
+
+  const { ensureCanUseAi, openDialog, dialog } = useAiCreditsGate();
 
   const confirm = useConfirm();
   const {
@@ -74,6 +80,11 @@ const EducationCard = ({
 
   async function handleEnhaceDescription() {
     setIsEnhancing(true);
+    const allowed = await ensureCanUseAi();
+    if (!allowed) {
+      setIsEnhancing(false);
+      return;
+    }
     try {
       const res = await enhaceEducationDescription(data.description);
       const confirmed = await confirm({
@@ -93,6 +104,9 @@ const EducationCard = ({
       }
     } catch (error) {
       console.error("Failed to enhance description:", error);
+      if (isAiCreditsExhaustedError(error)) {
+        openDialog();
+      }
     } finally {
       setIsEnhancing(false);
     }
@@ -100,6 +114,7 @@ const EducationCard = ({
 
   return (
     <div ref={setNodeRef} style={cardStyle} key={data.id}>
+      {dialog}
       <motion.div
         drag="y"
         dragConstraints={{ top: 0, bottom: 0 }}

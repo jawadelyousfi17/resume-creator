@@ -42,6 +42,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import Link from "next/link";
+import {
+  isAiCreditsExhaustedError,
+  useAiCreditsGate,
+} from "@/components/general/aiCreditsDialog";
 
 const Tailor = ({
   resume,
@@ -65,6 +69,8 @@ const Tailor = ({
   const router = useRouter();
   const searchParams = useSearchParams();
   const job_id = searchParams.get("job_id");
+
+  const { ensureCanUseAi, openDialog, dialog } = useAiCreditsGate();
 
   const [jobDetails, setJobDetails] = useState<SingleJobResponse | null>(null);
   const [loading, setLoading] = useState(Boolean(job_id));
@@ -94,6 +100,9 @@ const Tailor = ({
       setScore(s);
     } catch (e) {
       console.error(e);
+      if (isAiCreditsExhaustedError(e)) {
+        openDialog();
+      }
     } finally {
       setCalculatingScore(false);
     }
@@ -102,6 +111,12 @@ const Tailor = ({
   useEffect(() => {
     (async () => {
       if (job_id) {
+        const allowed = await ensureCanUseAi();
+        if (!allowed) {
+          setLoading(false);
+          return;
+        }
+
         if (false) {
           const jobData = JSON.parse(localStorage.getItem("jobData") as string);
           setJobDetails(jobData);
@@ -124,20 +139,27 @@ const Tailor = ({
           localStorage.setItem("jobData", JSON.stringify(jobData));
           setJobDetails(jobData);
 
-          const _keywords = await getKeywordsFromJob(
-            jobData.data[0].job_description
-          );
-          setKeywords(_keywords.map((kw) => ({ [kw]: true })));
+          try {
+            const _keywords = await getKeywordsFromJob(
+              jobData.data[0].job_description
+            );
+            setKeywords(_keywords.map((kw) => ({ [kw]: true })));
 
-          calculateScore(
-            resume.content as unknown as T_Resume,
-            jobData.data[0].job_description
-          );
+            calculateScore(
+              resume.content as unknown as T_Resume,
+              jobData.data[0].job_description
+            );
+          } catch (e) {
+            console.error(e);
+            if (isAiCreditsExhaustedError(e)) {
+              openDialog();
+            }
+          }
         }
         setLoading(false);
       }
     })();
-  }, [job_id]);
+  }, [ensureCanUseAi, job_id, openDialog]);
 
   function extractJobIdFromUrl(raw: string): string | null {
     try {
@@ -168,6 +190,13 @@ const Tailor = ({
 
     setLoadingJobInput(true);
     setLoading(true);
+    const allowed = await ensureCanUseAi();
+    if (!allowed) {
+      setLoadingJobInput(false);
+      setLoading(false);
+      return;
+    }
+
     try {
       if (link) {
         // Try to extract job_id from URL first
@@ -177,14 +206,23 @@ const Tailor = ({
           const jobData = await getSingleJobDetails(extracted);
           if (jobData && jobData.data?.[0]?.job_description) {
             setJobDetails(jobData);
-            const _keywords = await getKeywordsFromJob(
-              jobData.data[0].job_description
-            );
-            setKeywords(_keywords.map((kw) => ({ [kw]: true })));
-            await calculateScore(
-              resume.content as unknown as T_Resume,
-              jobData.data[0].job_description
-            );
+            try {
+              const _keywords = await getKeywordsFromJob(
+                jobData.data[0].job_description
+              );
+              setKeywords(_keywords.map((kw) => ({ [kw]: true })));
+              await calculateScore(
+                resume.content as unknown as T_Resume,
+                jobData.data[0].job_description
+              );
+            } catch (e) {
+              console.error(e);
+              if (isAiCreditsExhaustedError(e)) {
+                openDialog();
+                return;
+              }
+              throw e;
+            }
             toast.success("Job loaded");
             return;
           }
@@ -203,14 +241,23 @@ const Tailor = ({
         }
 
         setJobDetails(scrapedData);
-        const _keywords = await getKeywordsFromJob(
-          scrapedData.data[0].job_description
-        );
-        setKeywords(_keywords.map((kw) => ({ [kw]: true })));
-        await calculateScore(
-          resume.content as unknown as T_Resume,
-          scrapedData.data[0].job_description
-        );
+        try {
+          const _keywords = await getKeywordsFromJob(
+            scrapedData.data[0].job_description
+          );
+          setKeywords(_keywords.map((kw) => ({ [kw]: true })));
+          await calculateScore(
+            resume.content as unknown as T_Resume,
+            scrapedData.data[0].job_description
+          );
+        } catch (e) {
+          console.error(e);
+          if (isAiCreditsExhaustedError(e)) {
+            openDialog();
+            return;
+          }
+          throw e;
+        }
         toast.success("Job loaded");
         return;
       }
@@ -239,9 +286,21 @@ const Tailor = ({
       };
 
       setJobDetails(fakeJob);
-      const _keywords = await getKeywordsFromJob(description);
-      setKeywords(_keywords.map((kw) => ({ [kw]: true })));
-      await calculateScore(resume.content as unknown as T_Resume, description);
+      try {
+        const _keywords = await getKeywordsFromJob(description);
+        setKeywords(_keywords.map((kw) => ({ [kw]: true })));
+        await calculateScore(
+          resume.content as unknown as T_Resume,
+          description
+        );
+      } catch (e) {
+        console.error(e);
+        if (isAiCreditsExhaustedError(e)) {
+          openDialog();
+          return;
+        }
+        throw e;
+      }
       toast.success("Job loaded");
     } finally {
       setLoading(false);
@@ -250,17 +309,38 @@ const Tailor = ({
   }
 
   async function handleAutoTailor() {
+    setTailoring(true);
+
+    const allowed = await ensureCanUseAi();
+    if (!allowed) {
+      setTailoring(false);
+      setOpen(false);
+
+      return;
+    }
+
     const selectedKeywords = keywords
       .filter((k) => Object.values(k)[0])
       .map((k) => Object.keys(k)[0]);
 
     setTailoring(true);
     setOpen(false);
-    const newContent = await tailorResumeAi(
-      selectedKeywords,
-      jobDetails?.data[0].job_description || "",
-      resume.content as any
-    );
+    let newContent: any;
+    try {
+      newContent = await tailorResumeAi(
+        selectedKeywords,
+        jobDetails?.data[0].job_description || "",
+        resume.content as any
+      );
+    } catch (e) {
+      console.error(e);
+      if (isAiCreditsExhaustedError(e)) {
+        openDialog();
+        setTailoring(false);
+        return;
+      }
+      throw e;
+    }
 
     const newResume = await updateResumeById(resume.id, newContent as T_Resume);
 
@@ -336,6 +416,7 @@ const Tailor = ({
 
   return (
     <div className=" space-y-5 items-center justify-center w-full pt-4">
+      {dialog}
       {!job_id && !jobDetails && (
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}

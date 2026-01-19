@@ -1,48 +1,35 @@
 "use server";
 
-import puppeteer from "puppeteer";
-
 export async function generatePDF(html: string, fileName: string = "resume") {
   try {
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
+    const apiHost = process.env.PDF_API_HOST || "http://localhost:3000";
+    const apiUrl = `${apiHost}/api/pdf/generate`;
 
-    const page = await browser.newPage();
-
-    // Set viewport to ensure consistent rendering
-    await page.setViewport({
-      width: 794,
-      height: 1123,
-    });
-
-    // Set content with all styles inline
-    await page.setContent(html, {
-      waitUntil: ["networkidle0", "domcontentloaded"],
-      timeout: 30000,
-    });
-
-    // Generate PDF
-    const pdfBuffer = await page.pdf({
-      format: "A4",
-      printBackground: true,
-      preferCSSPageSize: true,
-      margin: {
-        top: "0mm",
-        right: "0mm",
-        bottom: "0mm",
-        left: "0mm",
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify({
+        html,
+        fileName,
+      }),
     });
 
-    await browser.close();
+    if (!response.ok) {
+      throw new Error(`API request failed with status ${response.status}`);
+    }
 
-    // Convert to base64 for client transfer
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || "Failed to generate PDF");
+    }
+
     return {
       success: true,
-      data: Buffer.from(pdfBuffer).toString("base64"),
-      fileName: `${fileName}.pdf`,
+      data: result.data,
+      fileName: result.fileName,
     };
   } catch (error) {
     console.error("PDF generation error:", error);

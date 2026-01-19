@@ -16,6 +16,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { useAiCreditsGate } from "@/components/general/aiCreditsDialog";
+import toast from "react-hot-toast";
 
 const Hobbies = ({
   data,
@@ -25,6 +27,13 @@ const Hobbies = ({
   setData: Dispatch<SetStateAction<T_Resume>>;
 }) => {
   const [filterVal, setFilterVal] = useState("");
+  const { ensureCanUseAi, dialog } = useAiCreditsGate();
+
+  async function handleEnhanceClick() {
+    const allowed = await ensureCanUseAi();
+    if (!allowed) return;
+    toast("AI hobbies enhancement not wired yet");
+  }
 
   const hoobies = [
     "Reading",
@@ -131,6 +140,7 @@ const Hobbies = ({
 
   return (
     <div className="bg-background p-4 space-y-5">
+      {dialog}
       <div className="flex flex-col gap-0.5">
         <span className="font-semibold font-serif">Hobbies</span>
         <span className="text-xs font-light text-foreground/50"></span>
@@ -145,6 +155,7 @@ const Hobbies = ({
               <Button
                 className="bg-background  rounded-full text-indigo-500 hover:text-indigo-700 hover:bg-background/80"
                 size="sm"
+                onClick={handleEnhanceClick}
               >
                 <Sparkles />
                 Enhace with AI

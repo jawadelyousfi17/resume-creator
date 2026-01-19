@@ -10,7 +10,6 @@ import {
   Plus,
   Target,
 } from "lucide-react";
-import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   Tooltip,
@@ -20,8 +19,13 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+import { useResumeQuotaGate } from "@/components/general/resumeQuotaDialog";
 
 const CreateResume = () => {
+  const router = useRouter();
+  const { ensureCanCreateResume, dialog } = useResumeQuotaGate();
+
   const [editing, setEditing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const [resumeTitle, setResumeTitle] = useState("Untiled");
@@ -31,11 +35,19 @@ const CreateResume = () => {
     if (editing) inputRef.current.focus();
   }, [editing]);
 
+  async function handleCreateClick(e: React.MouseEvent) {
+    e.preventDefault();
+    const allowed = await ensureCanCreateResume();
+    if (!allowed) return;
+    router.push("/app/resumes/create");
+  }
+
   return (
-    <Link
-      href="/app/resumes/create"
+    <div
+      onClick={handleCreateClick}
       className="flex gap-4 group cursor-pointer "
     >
+      {dialog}
       <div className="relative w-50 min-w-50 h-fit ">
         <div>
           <div className="absolute top-0 left-0 w-full h-full rounded-md border flex justify-center items-center">
@@ -61,7 +73,7 @@ const CreateResume = () => {
           of getting hired!
         </p>
       </div>
-    </Link>
+    </div>
   );
 };
 

@@ -52,7 +52,7 @@ export default async function RootLayout({
     : null;
 
   return (
-    <html lang="en" className="">
+    <html lang="en" className="dark">
       <body
         className={`${lexend.variable} ${inter.variable} ${geistMono.variable} ${ebGaramond.variable} ${lexend.className}   antialiased`}
       >
