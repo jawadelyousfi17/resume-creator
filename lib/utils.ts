@@ -26,6 +26,8 @@ export function formatDateTime(date: Date | string | null | undefined): string {
   );
   const hours = dateObj.getHours().toString().padStart(2, "0");
   const minutes = dateObj.getMinutes().toString().padStart(2, "0");
+
+  return `${day} ${month} at ${hours}:${minutes}`;
 }
 export function absoluteUrl(path: string) {
   return `${process.env.NEXT_PUBLIC_APP_URL}${path}`;

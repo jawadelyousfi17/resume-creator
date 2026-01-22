@@ -4,16 +4,15 @@ import React from "react";
 import { CollapseProvider } from "@/components/general/useCollapse";
 import { ConfirmProvider } from "@/components/general/confirmContext";
 import { Toaster } from "react-hot-toast";
-import { UserProvider } from "@/components/general/userContext";
+import { UserProvider, UserWithSubscription } from "@/components/general/userContext";
 import NextTopLoader from "nextjs-toploader";
-import { User } from "@/lib/generated/prisma";
 
 export default function Providers({
   children,
   user,
 }: {
   children: React.ReactNode;
-  user: User | null;
+  user: UserWithSubscription | null;
 }) {
   return (
     <UserProvider user={user}>

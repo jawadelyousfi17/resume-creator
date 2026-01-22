@@ -7,7 +7,7 @@ const Navbar = () => {
   const user = useUser();
 
   return (
-    <nav className="flex justify-between items-center h-18 px-4 bg-background sticky top-0 z-50 w-full  backdrop-blur-md z-10">
+    <nav className="flex justify-between items-center h-18 px-4 bg-background sticky top-0 z-50 w-full backdrop-blur-md">
       <div>
         <img src="/icons/logo.svg" className="h-10" alt="" />
       </div>
@@ -22,7 +22,7 @@ const Navbar = () => {
         <Link href="/" className="font-light">
           <span>Resources</span>
         </Link>
-        <div className="w-[1px] h-[20px] bg-foreground/10 mx-4">{""}</div>
+        <div className="w-px h-5 bg-foreground/10 mx-4">{""}</div>
 
         {user && (
           <Link href="/app/resumes" className="text-primary font-light">

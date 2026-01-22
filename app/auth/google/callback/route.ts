@@ -50,7 +50,7 @@ export async function GET(request: Request) {
       } catch (error) {
         return NextResponse.redirect(`${origin}/auth/error`);
       }
-      return NextResponse.redirect(`${origin}`);
+      return NextResponse.redirect(`${origin}/app/resumes`);
     }
   }
 

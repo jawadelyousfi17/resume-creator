@@ -3,7 +3,7 @@
 import { User, UserSubscription } from "@/lib/generated/prisma";
 import React, { createContext, useContext, ReactNode } from "react";
 
-type UserWithSubscription = User & {
+export type UserWithSubscription = User & {
   subscription: UserSubscription | null;
 };
 
