@@ -4,7 +4,10 @@ import React from "react";
 import { CollapseProvider } from "@/components/general/useCollapse";
 import { ConfirmProvider } from "@/components/general/confirmContext";
 import { Toaster } from "react-hot-toast";
-import { UserProvider, UserWithSubscription } from "@/components/general/userContext";
+import {
+  UserProvider,
+  UserWithSubscription,
+} from "@/components/general/userContext";
 import NextTopLoader from "nextjs-toploader";
 
 export default function Providers({
