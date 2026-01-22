@@ -1,10 +1,14 @@
 "use client";
 
-import { User } from "@/lib/generated/prisma";
+import { User, UserSubscription } from "@/lib/generated/prisma";
 import React, { createContext, useContext, ReactNode } from "react";
 
+type UserWithSubscription = User & {
+  subscription: UserSubscription | null;
+};
+
 interface UserContextType {
-  user: User | null;
+  user: UserWithSubscription | null;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -14,7 +18,7 @@ export const UserProvider = ({
   user,
 }: {
   children: ReactNode;
-  user: User | null;
+  user: UserWithSubscription | null;
 }) => {
   return (
     <UserContext.Provider value={{ user }}>{children}</UserContext.Provider>

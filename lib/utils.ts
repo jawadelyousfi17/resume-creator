@@ -6,7 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatMonthYear(
-  date: Date | string | null | undefined
+  date: Date | string | null | undefined,
 ): string {
   if (!date) return "";
   const dateObj = typeof date === "string" ? new Date(date) : date;
@@ -22,10 +22,11 @@ export function formatDateTime(date: Date | string | null | undefined): string {
 
   const day = dateObj.getDate();
   const month = new Intl.DateTimeFormat("en-US", { month: "long" }).format(
-    dateObj
+    dateObj,
   );
   const hours = dateObj.getHours().toString().padStart(2, "0");
   const minutes = dateObj.getMinutes().toString().padStart(2, "0");
-
-  return `${day} ${month}, ${hours}:${minutes}`;
+}
+export function absoluteUrl(path: string) {
+  return `${process.env.NEXT_PUBLIC_APP_URL}${path}`;
 }

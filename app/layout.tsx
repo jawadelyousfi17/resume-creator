@@ -48,11 +48,14 @@ export default async function RootLayout({
         where: {
           id: user.id,
         },
+        include: {
+          subscription: true,
+        },
       })
     : null;
 
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="">
       <body
         className={`${lexend.variable} ${inter.variable} ${geistMono.variable} ${ebGaramond.variable} ${lexend.className}   antialiased`}
       >

@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Check, Crown, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { RiSparklingFill } from "react-icons/ri";
+import { SubscribeButton } from "./_components/SubscribeButton";
 
 const features = {
   free: ["Up to 3 resumes", "10 AI credits", "All templates", "Basic export"],
@@ -74,15 +75,13 @@ export default function SubscribePage() {
                 <div className="mt-1 text-3xl font-bold">$19</div>
                 <div className="text-xs text-muted-foreground">per month</div>
               </div>
-            <div className="rounded-full bg-primary/10 px-2 py-1 text-[10px] font-semibold text-primary">
+              <div className="rounded-full bg-primary/10 px-2 py-1 text-[10px] font-semibold text-primary">
                 Monthly
               </div>
             </div>
             <FeatureList items={features.premium} />
             <div className="mt-6">
-              <Button className="w-full bg-yellow-500 text-black hover:bg-yellow-500/90">
-                Upgrade Monthly
-              </Button>
+              <SubscribeButton />
             </div>
           </div>
 
@@ -105,14 +104,10 @@ export default function SubscribePage() {
             </div>
             <FeatureList items={features.premium} />
             <div className="mt-6">
-              <Button className="w-full bg-yellow-500 text-black hover:bg-yellow-500/90">
-                Upgrade Yearly
-              </Button>
+              <SubscribeButton isYearly />
             </div>
           </div>
         </div>
-
-       
       </div>
     </div>
   );
