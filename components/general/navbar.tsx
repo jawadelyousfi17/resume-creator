@@ -25,7 +25,7 @@ const Navbar = () => {
         <div className="w-[1px] h-[20px] bg-foreground/10 mx-4">{""}</div>
 
         {user && (
-          <Link href="/" className="text-primary font-light">
+          <Link href="/app/resumes" className="text-primary font-light">
             <span>My Account</span>
           </Link>
         )}
