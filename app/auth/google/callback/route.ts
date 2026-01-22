@@ -37,7 +37,7 @@ export async function GET(request: Request) {
           },
         });
 
-        if (user) return NextResponse.redirect(`${origin}`);
+        if (user) return NextResponse.redirect(`${origin}/app/resumes`);
         user = await prisma.user.create({
           data: {
             email: userMetaData.email,
