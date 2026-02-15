@@ -32,13 +32,13 @@ const page = () => {
 
   return (
     <main className="bg-foreground/0 h-full p-8">
-      <div className="flex border p-8 items-center justify-center gap-6 bg-background w-fit mx-auto rounded-2xl">
+      <div className="flex border p-4 items-center justify-center gap-6 bg-background w-fit mx-auto rounded-2xl">
         <div className="flex flex-1 flex-col gap-4 items-start   max-w-md md:min-w-sm">
           <img src="/icons/logo.svg" className="h-10" alt="" />
           <div className="space-y-0.5">
             <h1 className="font-bold text-lg font-serif">Log in </h1>
             <p className="text-foreground/50 text-sm font-light">
-              Login using your social accounts
+              Login using your google accounts
             </p>
           </div>
 
@@ -58,15 +58,6 @@ const page = () => {
                 />
               )}
               Sign in with google
-              <div></div>
-            </Button>
-            <Button className="space-x-2 shadow-none w-full bg-blue-600 text-white flex items-center justify-between ">
-              <img
-                src="/icons/linkedin-app-white-icon.webp"
-                className="h-5"
-                alt=""
-              />
-              Sign in with LinkedIn
               <div></div>
             </Button>
           </div>

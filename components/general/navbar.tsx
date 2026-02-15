@@ -9,7 +9,7 @@ const Navbar = () => {
   return (
     <nav className="flex justify-between items-center h-18 px-4 bg-background sticky top-0 z-50 w-full backdrop-blur-md">
       <div>
-        <img src="/icons/logo.svg" className="h-10" alt="" />
+        <img src="/icons/logo.png" className="h-10" alt="" />
       </div>
 
       <div className="flex items-center gap-4">

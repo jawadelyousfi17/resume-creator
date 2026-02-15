@@ -13,6 +13,7 @@ import {
 import { useState, useEffect } from "react";
 import type { CarouselApi } from "@/components/ui/carousel";
 import Navbar from "@/components/general/navbar";
+import Link from "next/link";
 
 const page = () => {
   const [api, setApi] = useState<CarouselApi>();
@@ -93,10 +94,14 @@ const page = () => {
               Only 2% of resumes win. Yours will be one of them.
             </p>
             <div className="flex gap-2 justify-center md:justify-start">
-              <Button className="">Create my resume</Button>
-              <Button variant="outline" className="shadow-none ">
-                Upload my resume
-              </Button>
+              <Link href="/app/resumes">
+                <Button className="">Create my resume</Button>
+              </Link>
+              <Link href="/app/create-from-pdf">
+                <Button variant="outline" className="shadow-none ">
+                  Upload my resume
+                </Button>
+              </Link>
             </div>
             <div className="flex flex-col gap-2 mt-4 items-center md:items-start">
               <div className="flex gap-1 items-center">
@@ -546,9 +551,11 @@ const page = () => {
                           />
                           {index === current && (
                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-secondary/50 rounded-2xl">
-                              <Button className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                                Use this template
-                              </Button>
+                              <Link href="/app/resumes">
+                                <Button className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                                  Use this template
+                                </Button>
+                              </Link>
                             </div>
                           )}
                         </div>
@@ -584,12 +591,15 @@ const page = () => {
               </div>
 
               <div>
-                <Button
-                  variant={"ghost"}
-                  className="px-0 font-light text-md text-primary space-x-1"
-                >
-                  <span> Create my resume</span> <ChevronRight width={20} />{" "}
-                </Button>
+                <Link href="/app/resumes">
+                  <Button
+                    variant={"ghost"}
+                    className="px-0 font-light text-md text-primary space-x-1"
+                  >
+                    <span> Create my resume</span>{" "}
+                    <ChevronRight width={20} />{" "}
+                  </Button>
+                </Link>
               </div>
             </div>
 
@@ -667,12 +677,15 @@ const page = () => {
               </div>
 
               <div>
-                <Button
-                  variant={"ghost"}
-                  className="px-0 font-light text-md text-primary space-x-1"
-                >
-                  <span> Tailor my resume</span> <ChevronRight width={20} />{" "}
-                </Button>
+                <Link href="/app/resumes">
+                  <Button
+                    variant={"ghost"}
+                    className="px-0 font-light text-md text-primary space-x-1"
+                  >
+                    <span> Tailor my resume</span>{" "}
+                    <ChevronRight width={20} />{" "}
+                  </Button>
+                </Link>
               </div>
             </div>
 
@@ -771,12 +784,16 @@ const page = () => {
               </p>
             </div>
             <div className="flex gap-3">
-              <Button size="lg" className="text-base">
-                Create my resume
-              </Button>
-              <Button size="lg" variant="outline" className="text-base">
-                View templates
-              </Button>
+              <Link href="/app/resumes">
+                <Button size="lg" className="text-base">
+                  Create my resume
+                </Button>
+              </Link>
+              <Link href="/app/resumes">
+                <Button size="lg" variant="outline" className="text-base">
+                  View templates
+                </Button>
+              </Link>
             </div>
             <div className="flex items-center gap-6 mt-2">
               <div className="flex items-center gap-2">
